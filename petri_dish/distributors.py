@@ -1,6 +1,7 @@
 
-from abc import ABCMeta
-import numpy as np
+from abc import ABCMeta, abstractmethod
+# import numpy as np
+import pandas as pd
 
 
 # Distributor object | abstract class
@@ -9,8 +10,24 @@ import numpy as np
 class AbstractBaseDistributor(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, treatment_groups):
-        treatment_groups = treatment_groups
+    def __init__(self, treatment_group_ids):
+        self.treatment_group_ids = treatment_group_ids
+
+    @abstractmethod
+    def assign_group(self, subjects):
+        """
+        Assigns each of the experimentation subjects (without a previous assignment) to a treatment group
+        (control is also considered a treatment group here, with no treatment applied).
+
+        Parameters
+        ----------
+        subjects: pandas DataFrame | table with all subject, assigned and unassigned. With their features.
+
+        Returns
+        -------
+        TODO: define
+        """
+        pass
 
 
 # Stochastic Distributor object | uses law of large numbers principle
@@ -21,18 +38,6 @@ class StochasticDistributor(AbstractBaseDistributor):
     subjects on each group.
     """
     def assign_group(self, subjects):
-        """
-        Assigns each of the experimentation subjects to a treatment group (control is also considered a treatment
-        group here, with no treatment applied).
-
-        Parameters
-        ----------
-        subjects: pandas DataFrame | table of experimentation subjects
-
-        Returns
-        -------
-        group_assignment: pandas Series | a series with all the assignments with same height as the subjects table.
-        """
         pass
 
 
@@ -46,38 +51,26 @@ class DirectedDistributor(AbstractBaseDistributor):
     """
     random_attempts = 5000
 
-    def __init__(self, treatment_groups, pre_assigned_subjects):
-        AbstractBaseDistributor.__init__(self, treatment_groups)
-        self.pre_assigned_subjects = pre_assigned_subjects
-
-    def assign_group(
+    def __init__(
         self,
-        subjects,
-        blocking_vars,
-        discrete_variables,
-        continuous_variables,
+        treatment_group_ids,
+        treatment_assignment_col,
+        balancing_features,
+        discrete_features,
+        continuous_features
     ):
-        """
-        Assigns each of the new experimentation subjects to a treatment group (control is also considered a treatment
-        group here, with no treatment applied).
+        AbstractBaseDistributor.__init__(self, treatment_group_ids)
+        self.treatment_assignment_col = treatment_assignment_col
 
-        Parameters
-        ----------
-        subjects
-        blocking_vars
-        discrete_variables
-        continuous_variables
-
-        Returns
-        -------
-        group_assignment: pandas Series | a series with all the assignments with same height as the subjects table.
-        """
+    def assign_group(self, subjects):
         # copy originall dataframe since we are going to change them
         subjects_df = subjects.copy()
 
         # get the count of each treatment in each of the blocking bins
-        current_balance = count_values_in_bins(subjects_df, block_vars, treatment_col, values=treatments)
-        current_balance = current_balance.sort_index()
+        # current_balance = count_values_in_bins(subjects_df, block_vars, treatment_col, values=treatments)
+        # current_balance = current_balance.sort_index()
+
+        current_balance = self._get_current_balance(subjects_df)
 
         # Try several randomized assignments (with guaranteed balance across blocking variables) and choose the assignment
         # for which the balancing variables are most equally distributed across treatments
@@ -126,6 +119,29 @@ class DirectedDistributor(AbstractBaseDistributor):
                 selected_assignments = possible_treatment
                 max_min_p = min_p
         return selected_assignments, max_min_p
+
+    def _get_current_balance(self, subjects_df, count_nulls=False):
+
+        # Get a multi index that includes all combination of blocking variables and treatments
+        joint_index = pd.MultiIndex.from_product(
+            [subjects_df[col].unique() for col in self.balancing_features] + [self.treatment_group_ids],
+            names=self.balancing_features + [self.treatment_assignment_col]
+        )
+        joint_block = joint_index.map(tuple)
+
+        # Remove nulls if not counting
+        if not count_nulls:
+            subjects_df = subjects_df.dropna(subset=[self.treatment_assignment_col])
+
+        if subjects_df.empty:
+            counts = pd.Series(0, index=joint_index, dtype=float, name=self.treatment_assignment_col)
+        else:
+            # Count the number of occurences of each value in each bin
+            counts = subjects_df.groupby(self.balancing_features)[self.treatment_assignment_col].value_counts()
+            # And in missing bins
+            counts = counts.reindex(joint_block).fillna(0)
+
+        return counts
 
     def set_random_attempts(self, attempts):
         self.random_attempts = attempts
