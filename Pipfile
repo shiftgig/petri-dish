@@ -1,11 +1,15 @@
 [[source]]
+
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
+
 [packages]
+
 pandas = "*"
-Tardis = {git = "ssh://git@github.com/sgrepo/tardis.git"}
+tardis = {git = "ssh://git@github.com/sgrepo/tardis.git"}
+scipy = "*"
 
 
 [dev-packages]
