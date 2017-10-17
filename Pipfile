@@ -5,7 +5,10 @@ name = "pypi"
 
 [packages]
 pandas = "*"
-Tardis = {git = "ssh://git@github.com/sgrepo/tardis.git"}
+gspread = "*"
+"google-auth" = "*"
 
 
 [dev-packages]
+ipython = "*"
+ipdb = "*"
