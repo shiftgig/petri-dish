@@ -33,6 +33,9 @@ def _cast_dataframe_types(dataframe, data_types):
 
 
 class GoogleSheetConnector:
+    """
+    A connector to read or write data from a google spreadsheet.
+    """
     SCOPES = [
         'https://spreadsheets.google.com/feeds',
         'https://www.googleapis.com/auth/drive',
@@ -75,6 +78,8 @@ class GoogleSheetConnector:
 
         :param str sheet_title: The title for the spreadsheet. It must be
             shared with the service account, unless a new one is to be created.
+        :param bool create: Indicate if the spreadsheet should be created if it
+            does not exist.
         :rtype: gspread.Spreadsheet
         """
         try:
@@ -118,7 +123,6 @@ class GoogleSheetConnector:
         """
         Write a dataframe into a spreadsheet
 
-        :param gspread.Spreadsheet sheet: The target spreadsheet.
         :param pandas.DataFrame dataframe: The actual data to write to the
             sheet.
         :param int worksheet_number: The worksheet to read. Indexes start at 1.
@@ -149,10 +153,9 @@ class GoogleSheetConnector:
         """
         Reads a sheet into a dataframe.
 
-        :param gspread.Speadsheet sheet: The spreadsheet to read.
-        :param int worksheet_number: The worksheet to read. Indexes start at 1.
         :param dict data_types: A dictionary of column headers -> data types,
             used to cast each column to a specify type.
+        :param int worksheet_number: The worksheet to read. Indexes start at 1.
 
         :rtype: pandas.DataFrame
         """
@@ -168,8 +171,24 @@ class GoogleSheetConnector:
 
 
 class PostgresConnector:
+    """
+    A connector to read data from a postgres database.
 
-    def __init__(self, dbname, user, password, host, port, query, params):
+    Note that only reading is supported, and writing is not implemented.
+    """
+    def __init__(self, dbname, user, password, host, port, query, params=()):
+        """
+        Creates a new PG connector.
+
+        :param str dbname: The name of the database from which to read.
+        :param str user: The database username with which to authenticate.
+        :param str password: The database password with which to authenticate.
+        :param str host: The database server's hostname.
+        :param int port: The port where the database server is running (default
+            5432).
+        :param str query: A postgres query that is executed to read data.
+        :param list params: Parameteres used to contruct the full SQL query.
+        """
         self.conn = psycopg2.connect(
             dbname=dbname,
             user=user,
@@ -182,6 +201,15 @@ class PostgresConnector:
         self.params = params
 
     def read(self, data_types=None):
+        """
+        Reads data into a dataframe.
+
+        :param dict data_types: A dictionary of column headers -> data types,
+            used to cast each column to a specify type.
+        :param int worksheet_number: The worksheet to read. Indexes start at 1.
+
+        :rtype: pandas.DataFrame
+        """
         cur = self.conn.cursor()
         cur.execute(self.query, self.params)
         columns = [desc[0] for desc in cur.description]
