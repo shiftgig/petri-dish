@@ -5,6 +5,7 @@ import logging
 
 import gspread
 import pandas
+import psycopg2
 from google.auth.transport.requests import AuthorizedSession
 from google.oauth2.service_account import Credentials
 
@@ -12,6 +13,23 @@ logger = logging.getLogger(__name__)
 
 
 logging.basicConfig(level=logging.DEBUG)
+
+
+def _cast_dataframe_types(dataframe, data_types):
+    for col, dtype in data_types.items():
+        if col not in dataframe.columns:
+            raise KeyError(
+                "Dictionary dtypes's key '{col}' was not found "
+                "in sheet.".format(col=col)
+            )
+
+        try:
+            dataframe[col] = dataframe[col].astype(dtype)
+        except ValueError as e:
+            raise Exception(
+                'Column "{col}" could not be typecast as {dtype}'
+                .format(col=col, dtype=dtype)
+            ) from e
 
 
 class GoogleSheetConnector:
@@ -144,19 +162,34 @@ class GoogleSheetConnector:
         columns = [col for col in worksheet.row_values(1) if col != '']
         dataframe = pandas.DataFrame(contents, columns=columns)
 
-        if data_types is not None:
-            for col, dtype in data_types.items():
-                if col not in dataframe.columns:
-                    raise KeyError(
-                        "Dictionary dtypes's key '{col}' was not found "
-                        "in sheet.".format(col=col)
-                    )
-
-                try:
-                    dataframe[col] = dataframe[col].astype(dtype)
-                except ValueError as e:
-                    raise Exception(
-                        'Column "{col}" could not be typecast as {dtype}'
-                        .format(col=col, dtype=dtype)
-                    ) from e
+        if data_types:
+            _cast_dataframe_types(dataframe, data_types)
         return dataframe
+
+
+class PostgresConnector:
+
+    def __init__(self, dbname, user, password, host, port, query, params):
+        self.conn = psycopg2.connect(
+            dbname=dbname,
+            user=user,
+            password=password,
+            host=host,
+            port=port,
+        )
+
+        self.query = query
+        self.params = params
+
+    def read(self, data_types=None):
+        cur = self.conn.cursor()
+        cur.execute(self.query, self.params)
+        columns = [desc[0] for desc in cur.description]
+
+        dataframe = pandas.DataFrame(cur.fetchall(), columns=columns)
+        if data_types:
+            _cast_dataframe_types(dataframe, data_types)
+        return dataframe
+
+    def write(self, dataframe):
+        raise NotImplementedError('Writing to postgres is not implemented.')
