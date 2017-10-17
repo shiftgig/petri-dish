@@ -1,3 +1,6 @@
+"""
+This module contains several connectors all sharing a same API.
+"""
 import logging
 
 import gspread
@@ -17,11 +20,24 @@ class GoogleSheetConnector:
         'https://www.googleapis.com/auth/drive',
     ]
 
-    def __init__(self, secret_key_path, share_with=None):
+    def __init__(
+        self,
+        secret_key_path,
+        sheet_title,
+        create=False,
+        share_with=None,
+    ):
         """
         Create a new Google Sheet connector.
 
+        This connector is a wrapper around a spreadsheet.
+
         :param os.Pathlike secret_key_path: The path to the secret key file.
+        :param str sheet_title: The title for the spreadsheet. It must be
+            shared with the service account, unless a new one is to be created.
+        :param bool create: Indicate if the spreadsheet should be created if it
+            does not exist. If this value is True, ``share_with`` MUST be
+            provided.
         :param str share_with: The email address of an account where newly
             created sheets will be shared by default.
         """
@@ -32,8 +48,9 @@ class GoogleSheetConnector:
         self.client.session = AuthorizedSession(scoped_credentials)
 
         self.share_with = share_with
+        self.sheet = self._open(sheet_title, create=create)
 
-    def open(self, sheet_title, create=False):
+    def _open(self, sheet_title, create=False):
         """
         Opens and returns a spreadsheet. Creates a new one if ``create`` is
         ``True``.
@@ -79,7 +96,7 @@ class GoogleSheetConnector:
         else:
             return 1, 1, row_count, col_count
 
-    def write(self, sheet, dataframe, worksheet_number=1):
+    def write(self, dataframe, worksheet_number=1):
         """
         Write a dataframe into a spreadsheet
 
@@ -88,7 +105,7 @@ class GoogleSheetConnector:
             sheet.
         :param int worksheet_number: The worksheet to read. Indexes start at 1.
         """
-        worksheet = sheet.get_worksheet(worksheet_number - 1)
+        worksheet = self.sheet.get_worksheet(worksheet_number - 1)
 
         col_indexes = {
             index: column_name
@@ -110,7 +127,7 @@ class GoogleSheetConnector:
         # Update in batch:
         worksheet.update_cells(cell_list)
 
-    def read(self, sheet, worksheet_number=1, data_types=None):
+    def read(self, data_types=None, worksheet_number=1):
         """
         Reads a sheet into a dataframe.
 
@@ -121,7 +138,7 @@ class GoogleSheetConnector:
 
         :rtype: pandas.DataFrame
         """
-        worksheet = sheet.get_worksheet(worksheet_number - 1)
+        worksheet = self.sheet.get_worksheet(worksheet_number - 1)
 
         contents = worksheet.get_all_records(head=1)
         columns = [col for col in worksheet.row_values(1) if col != '']
