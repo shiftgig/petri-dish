@@ -3,6 +3,8 @@ from abc import ABCMeta, abstractmethod
 # import numpy as np
 import pandas as pd
 
+from stat_tools import chi_squared, ttest
+
 
 # Distributor object | abstract class
 #   properties
@@ -66,63 +68,30 @@ class DirectedDistributor(AbstractBaseDistributor):
         self.continuous_features = continuous_features
 
     def assign_group(self, subjects):
-        # # copy originall dataframe since we are going to change them
-        # subjects_df = subjects.copy()
+        # copy originall dataframe since we are going to change them
+        subjects_copy = subjects.copy()
+
+        # get the count of each treatment in each of the blocking bins
+        current_assignments_balance = self._get_current_assignments(subjects_copy)
         #
-        # # get the count of each treatment in each of the blocking bins
-        # # current_balance = count_values_in_bins(subjects_df, block_vars, treatment_col, values=treatments)
-        # # current_balance = current_balance.sort_index()
-        #
-        # current_balance = self._get_current_assignments(subjects_df)
-        #
-        # # Try several randomized assignments (with guaranteed balance across blocking variables) and choose the assignment
-        # # for which the balancing variables are most equally distributed across treatments
-        # max_min_p = 0
-        # for randomization in range(num_attempts):
-        #     # initiallize to randomization of treatment assignments and balance
-        #     possible_treatment = subjects_df.copy()
-        #     possible_balance = current_balance.copy()
-        #
-        #     # for each unassigned row
-        #     for ind, subject in possible_treatment[possible_treatment[treatment_col].isnull()].iterrows():
-        #         # determine which bin of the blocking variables the subject belongs to
-        #         block_index = tuple(subject.loc[block_vars])
-        #         # choose a random assignment balanced across within the bin
-        #         assignment = (
-        #             possible_balance
-        #             .loc[block_index]   # Get the number of assignments to each treatment for the bin
-        #             .sample(frac=1)
-        #             .argmin()
-        #         )
-        #         possible_treatment.loc[ind, treatment_col] = assignment
-        #         possible_balance.loc[block_index + (assignment,)] += 1
-        #
-        #     # Determine how different the distribution of each balancing variable is across treatment groups
-        #     # We want them to be the same, thus statistically we want the p value to be high.
-        #     # We will assess this by the minimum p value for any balancing variable across treatments
-        #     min_p = 1
-        #
-        #     # Assess p-values for categorical balancing variables
-        #     for cat in block_vars + cat_vars:
-        #         _, p, _ = chi_squared(possible_treatment[cat], possible_treatment[treatment_col])
-        #         min_p = min(min_p, p)
-        #
-        #     # Assess p-values for continuous balancing variables
-        #     for t_ind1 in range(len(treatments)):
-        #         treatment1_slice = possible_treatment[possible_treatment[treatment_col] == treatments[t_ind1]]
-        #         for t_ind2 in range(t_ind1 + 1, len(treatments)):
-        #             treatment2_slice = possible_treatment[possible_treatment[treatment_col] == treatments[t_ind2]]
-        #             for col in cont_vars:
-        #                 if (treatment1_slice[col].notnull().sum() > 1) and (treatment2_slice[col].notnull().sum > 1):
-        #                     _, p = ttest(treatment1_slice[col], treatment2_slice[col])
-        #                     min_p = min(min_p, p)
-        #
-        #     # Keep current trial if it has a higher min_p value
-        #     if min_p > max_min_p:
-        #         selected_assignments = possible_treatment
-        #         max_min_p = min_p
-        # return selected_assignments, max_min_p
-        pass
+        # Try several randomized assignments (with guaranteed balance across blocking variables) and choose the assignment
+        # for which the balancing variables are most equally distributed across treatments
+        max_min_p = 0
+        for randomization in range(self.random_attempts):
+
+            (candidate_subjects_copy, candidate_assignments_balance) = self.generate_candidate_assignments(
+                subjects_copy,
+                current_assignments_balance
+            )
+
+            min_p_value = self.calculate_min_p_value_distribution_independence(candidate_subjects_copy)
+
+            # Keep current trial if it has a higher min_p value
+            if min_p_value > max_min_p:
+                selected_assignments = candidate_subjects_copy
+                max_min_p = min_p_value
+
+        return selected_assignments, max_min_p
 
     def _get_current_assignments(self, subjects_df, count_nulls=False):
 
@@ -145,7 +114,69 @@ class DirectedDistributor(AbstractBaseDistributor):
             # And in missing bins
             counts = counts.reindex(joint_block).fillna(0)
 
-        return counts
+        return counts.sort_index()
+
+    def generate_candidate_assignments(self, subjects, assignments_balance):
+        candidate_subjects_assignments = subjects.copy()
+        candidate_assignments_balance = assignments_balance.copy()
+
+        # for each unassigned row
+        for ind, subject in candidate_subjects_assignments[candidate_subjects_assignments[
+            self.treatment_assignment_col].isnull()
+        ].iterrows():
+            # determine which bin of the blocking variables the subject belongs to
+            block_index = tuple(subject.loc[self.balancing_features])
+            # choose a random assignment balanced across within the bin
+            assignment = (
+                candidate_assignments_balance
+                .loc[block_index]   # Get the number of assignments to each treatment for the bin
+                .sample(frac=1)
+                .argmin()
+            )
+            candidate_subjects_assignments.loc[ind, self.treatment_assignment_col] = assignment
+            candidate_assignments_balance.loc[block_index + (assignment,)] += 1
+
+        return (candidate_subjects_assignments, candidate_assignments_balance)
+
+    def calculate_min_p_value_distribution_independence(self, candidate_subjects_data):
+        """
+        Calculates minimum p-value for any discrete (categorical) and continous variable across treatments.
+
+        Ideally the distribution of each feature across treatment groups should not be independent,
+        thus statistically we want the p-value to be high.
+
+        (low p-value indicating lower confidence interval to reject null hypothesis of
+        independence in the distribution).
+        """
+        min_p = 1
+
+        # p-values for discrete balancing variables
+        for cat in self.balancing_features + self.discrete_features:
+            p = chi_squared(
+                candidate_subjects_data[cat],
+                candidate_subjects_data[self.treatment_assignment_col]
+            )
+            min_p = min(min_p, p)
+
+        # p-values for continuous balancing variables
+        for t_ind1 in range(len(self.treatment_group_ids)):
+
+            treatment1_slice = candidate_subjects_data[
+                candidate_subjects_data[self.treatment_assignment_col] == self.treatment_group_ids[t_ind1]
+            ]
+
+            for t_ind2 in range(t_ind1 + 1, len(self.treatment_group_ids)):
+
+                treatment2_slice = candidate_subjects_data[candidate_subjects_data[
+                    self.treatment_assignment_col] == self.treatment_group_ids[t_ind2]
+                ]
+
+                for col in self.continuous_features:
+                    if (treatment1_slice[col].notnull().sum() > 1) and (treatment2_slice[col].notnull().sum > 1):
+                        p = ttest(treatment1_slice[col], treatment2_slice[col])
+                        min_p = min(min_p, p)
+
+        return min_p
 
     def set_random_attempts(self, attempts):
         self.random_attempts = attempts
