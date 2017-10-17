@@ -1,14 +1,10 @@
 
 from abc import ABCMeta, abstractmethod
-# import numpy as np
 import pandas as pd
 
 from stat_tools import chi_squared, ttest
 
 
-# Distributor object | abstract class
-#   properties
-#       treatment groups (including control group) [number of groups or actual group number]
 class AbstractBaseDistributor(object):
     __metaclass__ = ABCMeta
 
@@ -23,11 +19,12 @@ class AbstractBaseDistributor(object):
 
         Parameters
         ----------
-        subjects: pandas DataFrame | table with all subject, assigned and unassigned. With their features.
+        subjects: pandas DataFrame | table with all experimentation subjects, assigned and unassigned. With features.
 
         Returns
         -------
-        TODO: define
+        selected_assignments: pandas dataFrame | table with all experimentation subjects assigned to a treatment group.
+        max_min_p: float | the min p_value for the selected assignments for all the subjects features.
         """
         pass
 
@@ -40,6 +37,7 @@ class StochasticDistributor(AbstractBaseDistributor):
     subjects on each group.
     """
     def assign_group(self, subjects):
+        # TODO: implement
         pass
 
 
@@ -47,8 +45,8 @@ class StochasticDistributor(AbstractBaseDistributor):
 class DirectedDistributor(AbstractBaseDistributor):
     """
     The assignment method for this subclass is directed. This means that an experimentation subject will be
-    assigned to a group based on the total balance of the system in terms of the subject's characteristics. This
-    method should be generally used when a small number of subjects per treatment group is expected, and therefore,
+    assigned to a treatment group based on the total balance of the system in terms of the subject's characteristics.
+    This method should be generally used when a small number of subjects per treatment group is expected, and therefore,
     where the law of large numbers isn't observable.
     """
     random_attempts = 1000
@@ -72,28 +70,29 @@ class DirectedDistributor(AbstractBaseDistributor):
         subjects_copy = subjects.copy()
 
         # get the count of each treatment in each of the blocking bins
-        current_assignments_balance = self._get_current_assignments(subjects_copy)
-        #
-        # Try several randomized assignments (with guaranteed balance across blocking variables) and choose the assignment
-        # for which the balancing variables are most equally distributed across treatments
+        current_assignments_balance = self.get_current_assignment_balance(subjects_copy)
+
         max_min_p = 0
+        # Try several randomized assignments (with guaranteed balance across blocking variables) and choose the assignment
         for randomization in range(self.random_attempts):
 
+            # Generate candidate assignments
             (candidate_subjects_copy, candidate_assignments_balance) = self.generate_candidate_assignments(
                 subjects_copy,
                 current_assignments_balance
             )
 
+            # Test the distribution quality of those assignments
             min_p_value = self.calculate_min_p_value_distribution_independence(candidate_subjects_copy)
 
-            # Keep current trial if it has a higher min_p value
+            # Keep current trial if the distribution is better (evenly across treatment groups) than the previous one
             if min_p_value > max_min_p:
                 selected_assignments = candidate_subjects_copy
                 max_min_p = min_p_value
 
         return selected_assignments, max_min_p
 
-    def _get_current_assignments(self, subjects_df, count_nulls=False):
+    def get_current_assignment_balance(self, subjects_df, count_nulls=False):
 
         # Get a multi index that includes all combination of blocking variables and treatments
         joint_index = pd.MultiIndex.from_product(
@@ -117,6 +116,10 @@ class DirectedDistributor(AbstractBaseDistributor):
         return counts.sort_index()
 
     def generate_candidate_assignments(self, subjects, assignments_balance):
+        """
+        Generates candidate assignments for all the unassigned test subjects using the pre-existing assignments
+        and the balancing features.
+        """
         candidate_subjects_assignments = subjects.copy()
         candidate_assignments_balance = assignments_balance.copy()
 

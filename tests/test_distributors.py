@@ -33,7 +33,7 @@ class DistributorTestCase(unittest.TestCase):
             }
         )
 
-    def test_get_current_assignments_returns_assignments_count_successfully(self):
+    def test_get_current_assignment_balance_returns_assignments_count_successfully(self):
         expected = self.test_assignments
-        actual = self.test_directed_distributor._get_current_assignments(self.test_subjects)
+        actual = self.test_directed_distributor.get_current_assignment_balance(self.test_subjects)
         assert_frame_equal(expected, actual.reset_index())
