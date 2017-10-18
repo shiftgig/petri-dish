@@ -1,5 +1,5 @@
 import pandas as pd
-import scipy as sp
+import scipy.stats
 
 
 def chi_squared(series1, series2):
@@ -17,7 +17,7 @@ def chi_squared(series1, series2):
     dof: int | degrees-of-freedom
     """
     joint_distribution = pd.crosstab(series1.astype(str), series2.astype(str))
-    chi2, p, dof, _ = sp.stats.chi2_contingency(joint_distribution)
+    chi2, p, dof, _ = scipy.stats.chi2_contingency(joint_distribution)
     return p
 
 
@@ -34,5 +34,5 @@ def ttest(series1, series2, equal_var=False):
     t: float | The t-statistic
     p: float | The p-value of the t-test
     """
-    t, p = sp.stats.ttest_ind(series1.values, series2.values, equal_var=equal_var, nan_policy='omit')
+    t, p = scipy.stats.ttest_ind(series1.values, series2.values, equal_var=equal_var, nan_policy='omit')
     return p
