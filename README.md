@@ -4,7 +4,10 @@
 Petri dish is a simple experimentation framework. It is designed to build an experiment timeline with stages and treatment groups, and track the evolution of the experimentation subjects throughout the experiment. 
 
 
-## Usage
+## Getting Started
+
+In practice, Petri dish allows you to get experimentation subjects data from postgres, apply filters and assign treatment groups to each one and then track their progress through the experimentation stages through a google sheets spreadsheet. Here is how you set it up:
+
  1. Instatiate connections (**subject_source** and **subject_sink**) using your credentials and the [connector wrappers](https://github.com/sgrepo/petri-dish/blob/master/petri_dish/connectors.py).
  2. Instantiate a [distributor](https://github.com/sgrepo/petri-dish/blob/master/petri_dish/distributors.py). Distributors define the treatment group assignment logic. More info below.
  3. Define the experiment stages and filters.
