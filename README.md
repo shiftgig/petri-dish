@@ -24,6 +24,7 @@ In practice, Petri dish allows you to get experimentation subjects data from pos
 
 ##### - built in daemon capabilities to replace dependency from cron job setup 
 ##### - support for automated actions (e.g: emails) to subjects based on stage and possibly metrics or others
+##### - increased coverage
  
 ## More Info
 
