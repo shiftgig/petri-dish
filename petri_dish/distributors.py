@@ -55,7 +55,7 @@ class DirectedDistributor(AbstractBaseDistributor):
     ----------
     random_attempts: int | number of trials to run the random assignment of treatment groups.
     """
-    random_attempts = 1000
+    random_attempts = 500
 
     def __init__(
         self,

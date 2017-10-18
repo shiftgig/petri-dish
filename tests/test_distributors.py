@@ -36,6 +36,7 @@ class DistributorTestCase(unittest.TestCase):
             ['has_server_skill'],  # discrete_features,
             ['num_app_accessed']   # continuous_features
         )
+        self.test_directed_distributor.random_attempts = 5
         test_assignments_index = pd.MultiIndex.from_product(
             [[1, 2, 3]] + [[-1, 0]],
             names=(['market_id', 'treatment_group'])
@@ -76,7 +77,6 @@ class DistributorTestCase(unittest.TestCase):
         )
         self.assertEqual(expected, actual)
 
-    @unittest.skip("Not implemented")
     def test_assign_group_returns_successfully(self):
         result = self.test_directed_distributor.assign_group(self.test_subjects)
         print(result)
