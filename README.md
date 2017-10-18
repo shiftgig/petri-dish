@@ -17,6 +17,11 @@ Petri dish is a simple experimentation framework. It is designed to build an exp
 ## Example
 [ add in gifs and screenshots of the process of creating an experiment]
 
+## Next improvements
+
+##### - built in daemon capabilities to replace dependency from cron job setup 
+##### - support for automated actions (e.g: emails) to subjects based on stage and possibly metrics or others
+ 
 ## More Info
 
 ### Treatment group assignment
