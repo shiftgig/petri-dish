@@ -1,7 +1,7 @@
 import unittest
 
 import pandas as pd
-from pandas.testing import assert_series_equal
+from pandas.testing import assert_series_equal, assert_frame_equal
 import numpy as np
 
 from petri_dish.distributors import DirectedDistributor
@@ -78,8 +78,10 @@ class DistributorTestCase(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_assign_group_returns_successfully(self):
+        expected = self.candidate_test_subjects_data
         result = self.test_directed_distributor.assign_group(self.test_subjects)
-        print(result)
+        actual = result[0]
+        assert_frame_equal(expected, actual)
 
     @unittest.skip("Not implemented")
     def test_assign_group_copies_input_data_by_value(self):

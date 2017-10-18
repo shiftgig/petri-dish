@@ -181,7 +181,7 @@ class DirectedDistributor(AbstractBaseDistributor):
                 ]
 
                 for col in self.continuous_features:
-                    if (treatment1_slice[col].notnull().sum() > 1) and (treatment2_slice[col].notnull().sum > 1):
+                    if (treatment1_slice[col].notnull().sum() > 1) and (treatment2_slice[col].notnull().sum() > 1):
                         p = ttest(treatment1_slice[col], treatment2_slice[col])
                         min_p = min(min_p, p)
 
