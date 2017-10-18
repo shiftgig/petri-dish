@@ -13,5 +13,7 @@ gspread = "*"
 scipy = "*"
 
 [dev-packages]
+
 ipython = "*"
 ipdb = "*"
+freezegun = "*"
