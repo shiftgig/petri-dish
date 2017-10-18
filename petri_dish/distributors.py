@@ -29,9 +29,10 @@ class AbstractBaseDistributor(object):
         pass
 
 
-# Stochastic Distributor object | uses law of large numbers principle
 class StochasticDistributor(AbstractBaseDistributor):
     """
+    Uses law of large numbers principle and random assignment for the treatment groups.
+
     The assignment method for this subclass is stochastic and generally should be used when the law
     of large numbers is observable for each group, namely, when there is a large quantity of experimentation
     subjects on each group.
@@ -41,13 +42,18 @@ class StochasticDistributor(AbstractBaseDistributor):
         pass
 
 
-# Directed Distributor object | directs the distributions based on subject's characteristics
 class DirectedDistributor(AbstractBaseDistributor):
     """
+    Directs the distributions based on subject's characteristics.
+
     The assignment method for this subclass is directed. This means that an experimentation subject will be
     assigned to a treatment group based on the total balance of the system in terms of the subject's characteristics.
     This method should be generally used when a small number of subjects per treatment group is expected, and therefore,
     where the law of large numbers isn't observable.
+
+    Properties
+    ----------
+    random_attempts: int | number of trials to run the random assignment of treatment groups.
     """
     random_attempts = 1000
 
@@ -66,7 +72,7 @@ class DirectedDistributor(AbstractBaseDistributor):
         self.continuous_features = continuous_features
 
     def assign_group(self, subjects):
-        # copy originall dataframe since we are going to change them
+        # copy original dataframe since we are going to change them
         subjects_copy = subjects.copy()
 
         # get the count of each treatment in each of the blocking bins
@@ -180,6 +186,3 @@ class DirectedDistributor(AbstractBaseDistributor):
                         min_p = min(min_p, p)
 
         return min_p
-
-    def set_random_attempts(self, attempts):
-        self.random_attempts = attempts
