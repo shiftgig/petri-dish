@@ -8,7 +8,10 @@ name = "pypi"
 [packages]
 
 pandas = "*"
+gspread = "*"
+"google-auth" = "*"
 scipy = "*"
 
-
 [dev-packages]
+ipython = "*"
+ipdb = "*"
