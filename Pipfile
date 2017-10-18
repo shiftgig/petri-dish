@@ -8,7 +8,6 @@ name = "pypi"
 [packages]
 
 pandas = "*"
-tardis = {git = "ssh://git@github.com/sgrepo/tardis.git"}
 scipy = "*"
 
 

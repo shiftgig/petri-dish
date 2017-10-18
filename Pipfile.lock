@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "676ee3a7d3168714530f1dbdd5ab43397e2fd6fc65e682d7366f3af5894c47af"
+            "sha256": "2c962d44f8049466cdea41b8c4f34ec0c27115c2527d8b62591d716e33e29ca6"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -131,9 +131,6 @@
                 "sha256:70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9"
             ],
             "version": "==1.11.0"
-        },
-        "tardis": {
-            "git": "ssh://git@github.com/sgrepo/tardis.git"
         }
     },
     "develop": {}
