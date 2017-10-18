@@ -2,6 +2,7 @@
 This module contains several connectors all sharing a same API.
 """
 import logging
+from datetime import date
 
 import gspread
 import pandas
@@ -16,6 +17,12 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def _cast_dataframe_types(dataframe, data_types):
+    """
+    Casts dataframe types to the types defined in data_types.
+
+    :param dict data_types: A dictionary where keys are column names, and dtype
+        is the desired data type.
+    """
     for col, dtype in data_types.items():
         if col not in dataframe.columns:
             raise KeyError(
@@ -221,3 +228,38 @@ class PostgresConnector:
 
     def write(self, dataframe):
         raise NotImplementedError('Writing to postgres is not implemented.')
+
+
+class DummyConnector:
+    """
+    This is a dummy connector, implementing the same interface as other
+    connectors, and should only be used for testing and experimenting.
+    """
+    def __init__(self, dataframe=None):
+        """
+        Initialize a new dummy connector. If a dataframe is provided, always
+        returns that, rather than the default, static data.
+        """
+        # Do NOT modify these values. Unit tests rely of these static values!
+        if dataframe is not None:
+            self.dataframe = dataframe
+        else:
+            self.dataframe = pandas.DataFrame({
+                'id': [1, 7, 100, 18],
+                'name': ['Alice', 'Bob', 'Charlie', 'Dave'],
+                'dob': [
+                    date(1997, 1, 1),
+                    date(1990, 1, 1),
+                    date(2010, 1, 1),
+                    date(1985, 1, 1),
+                ],
+                'colour': ['Purple', 'Red', 'Blue', 'Green'],
+            })
+
+    def write(self, dataframe):
+        """Merey asserts that the dataframe is actually a DataFrame."""
+        assert isinstance(dataframe, pandas.DataFrame)
+
+    def read(self, data_types=None):
+        """Returns a static set of data."""
+        return self.dataframe
