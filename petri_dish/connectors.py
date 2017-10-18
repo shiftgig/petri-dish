@@ -17,6 +17,12 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def _cast_dataframe_types(dataframe, data_types):
+    """
+    Casts dataframe types to the types defined in data_types.
+
+    :param dict data_types: A dictionary where keys are column names, and dtype
+        is the desired data type.
+    """
     for col, dtype in data_types.items():
         if col not in dataframe.columns:
             raise KeyError(
