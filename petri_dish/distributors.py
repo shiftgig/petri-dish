@@ -2,7 +2,7 @@
 from abc import ABCMeta, abstractmethod
 import pandas as pd
 
-from stat_tools import chi_squared, ttest
+from petri_dish.stat_tools import chi_squared, ttest
 
 
 class AbstractBaseDistributor(object):
