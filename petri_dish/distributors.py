@@ -76,20 +76,20 @@ class DirectedDistributor(AbstractBaseDistributor):
         subjects_copy = subjects.copy()
 
         # get the count of each treatment in each of the blocking bins
-        current_assignments_balance = self.get_current_assignment_balance(subjects_copy)
+        current_assignments_balance = self._get_current_assignment_balance(subjects_copy)
 
         max_min_p = 0
         # Try several randomized assignments (with guaranteed balance across blocking variables) and choose the assignment
         for randomization in range(self.random_attempts):
 
             # Generate candidate assignments
-            (candidate_subjects_copy, candidate_assignments_balance) = self.generate_candidate_assignments(
+            (candidate_subjects_copy, candidate_assignments_balance) = self._generate_candidate_assignments(
                 subjects_copy,
                 current_assignments_balance
             )
 
             # Test the distribution quality of those assignments
-            min_p_value = self.calculate_min_p_value_distribution_independence(candidate_subjects_copy)
+            min_p_value = self._calculate_min_p_value_distribution_independence(candidate_subjects_copy)
 
             # Keep current trial if the distribution is better (evenly across treatment groups) than the previous one
             if min_p_value > max_min_p:
@@ -98,7 +98,7 @@ class DirectedDistributor(AbstractBaseDistributor):
 
         return selected_assignments, max_min_p
 
-    def get_current_assignment_balance(self, subjects_df, count_nulls=False):
+    def _get_current_assignment_balance(self, subjects_df, count_nulls=False):
 
         # Get a multi index that includes all combination of blocking variables and treatments
         joint_index = pd.MultiIndex.from_product(
@@ -121,7 +121,7 @@ class DirectedDistributor(AbstractBaseDistributor):
 
         return counts.sort_index()
 
-    def generate_candidate_assignments(self, subjects, assignments_balance):
+    def _generate_candidate_assignments(self, subjects, assignments_balance):
         """
         Generates candidate assignments for all the unassigned test subjects using the pre-existing assignments
         and the balancing features.
@@ -147,7 +147,7 @@ class DirectedDistributor(AbstractBaseDistributor):
 
         return (candidate_subjects_assignments, candidate_assignments_balance)
 
-    def calculate_min_p_value_distribution_independence(self, candidate_subjects_data):
+    def _calculate_min_p_value_distribution_independence(self, candidate_subjects_data):
         """
         Calculates minimum p-value for any discrete (categorical) and continous variable across treatments.
 

@@ -46,16 +46,16 @@ class DistributorTestCase(unittest.TestCase):
 
     def test_get_current_assignment_balance_returns_assignments_count_successfully(self):
         expected = self.test_assignment_balance
-        actual = self.test_directed_distributor.get_current_assignment_balance(self.test_subjects)
+        actual = self.test_directed_distributor._get_current_assignment_balance(self.test_subjects)
         assert_series_equal(expected, actual)
 
     def test_get_current_assignment_balance_returns_series_type(self):
-        result = self.test_directed_distributor.get_current_assignment_balance(self.test_subjects)
+        result = self.test_directed_distributor._get_current_assignment_balance(self.test_subjects)
         self.assertTrue(isinstance(result, pd.Series))
 
     def test_generate_candidate_assignments_returns_correct_assignments(self):
         expected = self.candidate_test_subjects_data['treatment_group']
-        result = self.test_directed_distributor.generate_candidate_assignments(
+        result = self.test_directed_distributor._generate_candidate_assignments(
             self.test_subjects,
             self.test_assignment_balance
         )
@@ -63,7 +63,7 @@ class DistributorTestCase(unittest.TestCase):
         assert_series_equal(expected, actual)
 
     def test_generate_candidate_assignments_returns_tuple(self):
-        result = self.test_directed_distributor.generate_candidate_assignments(
+        result = self.test_directed_distributor._generate_candidate_assignments(
             self.test_subjects,
             self.test_assignment_balance
         )
@@ -71,7 +71,7 @@ class DistributorTestCase(unittest.TestCase):
 
     def test_calculate_min_p_value_distribution_independence_returns_expected_p_value(self):
         expected = 0.80239520915240781
-        actual = self.test_directed_distributor.calculate_min_p_value_distribution_independence(
+        actual = self.test_directed_distributor._calculate_min_p_value_distribution_independence(
             self.candidate_test_subjects_data
         )
         self.assertEqual(expected, actual)
