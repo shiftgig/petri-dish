@@ -6,7 +6,7 @@ Petri dish is a simple experimentation framework. It is designed to build an exp
 
 ## Usage
  1. Instatiate connections (**subject_source** and **subject_sink**) using your credentials and the [connector wrappers](https://github.com/sgrepo/petri-dish/blob/master/petri_dish/connectors.py).
- 2. Instantiate a [distributor](https://github.com/sgrepo/petri-dish/blob/master/petri_dish/distributors.py). Distributors define the treatment group assignment logic. More info here (add link).
+ 2. Instantiate a [distributor](https://github.com/sgrepo/petri-dish/blob/master/petri_dish/distributors.py). Distributors define the treatment group assignment logic. More info below.
  3. Define the experiment stages and filters.
  4. Instantiate a Dish, with those connections, a distributor, stages and
     filters.
@@ -20,4 +20,10 @@ Petri dish is a simple experimentation framework. It is designed to build an exp
 ## More Info
 
 ### Treatment group assignment
-[introduce and explain stochastic and directed assignment for the treatment groups and its relationship with the l]
+A good distribution of experimentation subjects  (in terms of characteristics or properties) across the treatment groups is essential for any type of experiment. 
+
+Whenever we expect a large amount of subjects per treatment group, this isn't a particular event and **[random assignment](https://github.com/sgrepo/petri-dish/blob/8678f259ed48c240d3e1dbf7f800c8181f9bdbb6/petri_dish/distributors.py#L32)** should be enough to expect the law of large numbers to do the job. 
+
+However, if the expected amount of subjects per group is low, there are ways we can **[direct the assignments](https://github.com/sgrepo/petri-dish/blob/8678f259ed48c240d3e1dbf7f800c8181f9bdbb6/petri_dish/distributors.py#L45)** of subjects to groups in order to maximize the diversity across treatment groups.
+
+We've added tools to handle that as part of this framework. Links above ^.
