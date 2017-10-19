@@ -99,3 +99,5 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+petri_dish/version.py

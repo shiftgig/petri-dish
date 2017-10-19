@@ -6,12 +6,8 @@ name = "pypi"
 
 
 [packages]
+"e1839a8" = {path = ".", editable = true}
 
-pandas = "*"
-gspread = "*"
-"google-auth" = "*"
-scipy = "*"
-"psycopg2" = "*"
 
 [dev-packages]
 
