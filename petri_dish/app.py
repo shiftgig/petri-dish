@@ -49,7 +49,7 @@ class Dish:
         :param list[func] filter: A set of filters, which will be run against
             each new subject in the data source. Each function must return True
             if the subject is valid for the experiment, or False if they do not
-            quality.
+            qualify.
         """
         if not stages:
             raise ValueError('The experiment must have at least one stage.')
