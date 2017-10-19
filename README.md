@@ -1,7 +1,7 @@
 # Petri Dish
 
 ## Introduction
-Petri dish is a simple experimentation framework. It is designed to build an experiment timeline with stages and treatment groups, and track the evolution of the experimentation subjects throughout the experiment. 
+Petri dish is designed to build an experiment timeline with stages and treatment groups, and track the evolution of the experimentation subjects throughout the experiment. 
 
 
 ## Getting Started
