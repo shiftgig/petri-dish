@@ -11,7 +11,10 @@ pandas = "*"
 gspread = "*"
 "google-auth" = "*"
 scipy = "*"
+"psycopg2" = "*"
 
 [dev-packages]
+
 ipython = "*"
 ipdb = "*"
+freezegun = "*"

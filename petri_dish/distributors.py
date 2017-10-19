@@ -2,7 +2,7 @@
 from abc import ABCMeta, abstractmethod
 import pandas as pd
 
-from stat_tools import chi_squared, ttest
+from petri_dish.stat_tools import chi_squared, ttest
 
 
 class AbstractBaseDistributor(object):
@@ -181,7 +181,7 @@ class DirectedDistributor(AbstractBaseDistributor):
                 ]
 
                 for col in self.continuous_features:
-                    if (treatment1_slice[col].notnull().sum() > 1) and (treatment2_slice[col].notnull().sum > 1):
+                    if (treatment1_slice[col].notnull().sum() > 1) and (treatment2_slice[col].notnull().sum() > 1):
                         p = ttest(treatment1_slice[col], treatment2_slice[col])
                         min_p = min(min_p, p)
 
