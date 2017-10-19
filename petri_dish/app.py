@@ -123,7 +123,7 @@ class Dish:
         The classification of new subjects and update stages for existing
         subjects.
         """
-        subjects = self._get_all_subjects()
+        subjects = self.get_all_subjects()
 
         for filter_ in self.filters:
             subjects = subjects[subjects.apply(filter_, axis=1)]
