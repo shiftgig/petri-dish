@@ -78,7 +78,7 @@ class DirectedDistributor(AbstractBaseDistributor):
         current_assignments_balance = self._get_current_assignment_balance(subjects_copy)
 
         max_min_p = 0
-        # Try several randomized assignments (with guaranteed balance across blocking variables) and choose the assignment
+        # Try several randomized assignments (with guaranteed balance across blocking variables) and choose one
         for randomization in range(self.random_attempts):
 
             # Generate candidate assignments
