@@ -1,0 +1,18 @@
+language: python
+cache: pip
+
+python:
+  - 3.4
+  - 3.5
+  - 3.6
+  - 3.7-dev
+
+env:
+  - PYTHONWARNINGS=all
+
+install:
+  - pip install pipenv
+  - pipenv install --dev
+
+script:
+  - python -m unittest
