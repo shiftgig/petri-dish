@@ -1,0 +1,22 @@
+language: python
+cache: pip
+
+python:
+  - 3.4
+  - 3.5
+  - 3.6
+
+env:
+  - PYTHONWARNINGS=all
+
+install:
+  - pip install pipenv
+  - pipenv install --dev
+
+script:
+  - python -m unittest
+
+jobs:
+  include:
+    - script:
+      - flake8

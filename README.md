@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/sgrepo/petri-dish.svg?branch=master)](https://travis-ci.org/sgrepo/petri-dish)
+
 # Petri Dish
 
 ## Introduction
