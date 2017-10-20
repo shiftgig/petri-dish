@@ -1,12 +1,11 @@
 
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 import pandas as pd
 
 from petri_dish.stat_tools import chi_squared, ttest
 
 
-class AbstractBaseDistributor(object):
-    __metaclass__ = ABCMeta
+class AbstractBaseDistributor(ABC):
 
     def __init__(self, treatment_group_ids):
         self.treatment_group_ids = treatment_group_ids
