@@ -79,7 +79,7 @@ class DirectedDistributor(AbstractBaseDistributor):
 
         max_min_p = 0
         # Try several randomized assignments (with guaranteed balance across blocking variables) and choose one
-        for randomization in range(self.random_attempts):
+        for _ in range(self.random_attempts):
 
             # Generate candidate assignments
             (candidate_subjects_copy, candidate_assignments_balance) = self._generate_candidate_assignments(
