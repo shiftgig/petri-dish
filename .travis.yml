@@ -15,3 +15,8 @@ install:
 
 script:
   - python -m unittest
+
+jobs:
+  include:
+    - script:
+      - flake8
