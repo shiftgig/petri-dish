@@ -1,6 +1,8 @@
 import gc
 from datetime import datetime, timezone
 
+import pandas
+
 
 class Dish:
     """
@@ -75,6 +77,17 @@ class Dish:
         """
         new_subjects = self.subject_source.read()
         grouped_subjects = self.subject_sink.read()
+        if grouped_subjects is None:
+            grouped_subjects = pandas.DataFrame(
+                columns=[
+                    self.index_column_name,
+                    # XXX: These columns need to be added to the DF even if
+                    # they're absent.
+                    self.GROUP_COLUMN_NAME,
+                    self.STAGE_COLUMN_NAME,
+                    self.JOINED_COLUMN_NAME,
+                ],
+            )
 
         grouped_subjects = grouped_subjects.filter(
             [
@@ -103,7 +116,7 @@ class Dish:
         now = datetime.now(timezone.utc)
         stage = None
 
-        for period, name in self.stages.items():
+        for period, name in self.stages:
             if subject[self.JOINED_COLUMN_NAME] + period >= now:
                 stage = name
             else:
@@ -115,7 +128,7 @@ class Dish:
         """
         Update the current stage for ``subjects`` using the configued stages.
         """
-        stages = subjects.apply(self.stage_for_row)
+        stages = subjects.apply(self.stage_for_subject, axis=1)
         subjects[self.STAGE_COLUMN_NAME] = stages
 
     def run(self):
@@ -133,7 +146,7 @@ class Dish:
             gc.apply()
 
         self.update_subject_stages(subjects)
-        self.group_balancer.balance(subjects)
+        self.group_balancer.assign_group(subjects)
 
         self.subject_sink.write(subjects)
         gc.apply()

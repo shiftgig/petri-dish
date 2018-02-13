@@ -168,7 +168,12 @@ class GoogleSheetConnector:
         """
         worksheet = self.sheet.get_worksheet(worksheet_number - 1)
 
-        contents = worksheet.get_all_records(head=1)
+        try:
+            contents = worksheet.get_all_records(head=1)
+        except IndexError:
+            # This is triggered if the sheet is empty (header line does not
+            # exist):
+            return None
         columns = [col for col in worksheet.row_values(1) if col != '']
         dataframe = pandas.DataFrame(contents, columns=columns)
 
